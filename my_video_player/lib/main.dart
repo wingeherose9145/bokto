@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // 锁定初始方向为竖屏
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyPrivatePlayer());
 }
@@ -21,7 +20,7 @@ class MyPrivatePlayer extends StatelessWidget {
     return MaterialApp(
       title: '私密播放器 Pro',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(useMaterial3: true), // 电影感深色主题
+      theme: ThemeData.dark(useMaterial3: true),
       home: const VideoListPage(),
     );
   }
@@ -43,7 +42,6 @@ class _VideoListPageState extends State<VideoListPage> {
     _loadPrivateVideos();
   }
 
-  // 加载 App 内部私密目录下的视频
   Future<void> _loadPrivateVideos() async {
     final directory = await getApplicationDocumentsDirectory();
     final List<FileSystemEntity> entities = directory.listSync();
@@ -55,11 +53,10 @@ class _VideoListPageState extends State<VideoListPage> {
     });
   }
 
-  // 多选并导入视频
   Future<void> _importVideos() async {
     FilePickerResult? result = await FilePicker.pickFiles(
       type: FileType.video,
-      allowMultiple: true, // 开启多选
+      allowMultiple: true,
     );
 
     if (result != null) {
@@ -67,12 +64,11 @@ class _VideoListPageState extends State<VideoListPage> {
       for (var path in result.paths) {
         if (path != null) {
           final file = File(path);
-          // 复制到内部私密目录，防止系统相册扫描
           final String newPath = '${directory.path}/${file.uri.pathSegments.last}';
           await file.copy(newPath);
         }
       }
-      _loadPrivateVideos(); // 刷新列表
+      _loadPrivateVideos();
     }
   }
 
@@ -82,22 +78,17 @@ class _VideoListPageState extends State<VideoListPage> {
       appBar: AppBar(
         title: const Text('我的私密库'),
         actions: [
-          IconButton(
-            onPressed: _importVideos,
-            icon: const Icon(Icons.add_to_photos),
-            tooltip: '导入视频',
-          ),
+          IconButton(onPressed: _importVideos, icon: const Icon(Icons.add_to_photos)),
         ],
       ),
       body: _videoFiles.isEmpty
-          ? const Center(child: Text('点击右上角图标导入私密视频'))
+          ? const Center(child: Text('点击右上角导入视频'))
           : ListView.builder(
               itemCount: _videoFiles.length,
               itemBuilder: (context, index) {
                 return ListTile(
                   leading: const Icon(Icons.video_file, color: Colors.blueAccent),
                   title: Text(_videoFiles[index].uri.pathSegments.last),
-                  subtitle: Text('${(_videoFiles[index].lengthSync() / (1024 * 1024)).toStringAsFixed(2)} MB'),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -139,7 +130,6 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   Future<void> _initPlayer() async {
-    // 释放旧资源 - 注意：这里不使用 await，因为 dispose 返回 void
     _chewieController?.dispose();
     _videoPlayerController?.dispose();
 
@@ -147,4 +137,56 @@ class _PlayerPageState extends State<PlayerPage> {
     
     await _videoPlayerController!.initialize();
 
-    _
+    _chewieController = ChewieController(
+      videoPlayerController: _videoPlayerController!,
+      autoPlay: true,
+      looping: false,
+      allowFullScreen: true,
+      allowPlaybackSpeedChanging: true,
+      showControls: true,
+      aspectRatio: _videoPlayerController!.value.aspectRatio,
+      deviceOrientationsAfterFullScreen: [DeviceOrientation.portraitUp],
+    );
+
+    _videoPlayerController!.addListener(() {
+      if (_videoPlayerController!.value.position != Duration.zero &&
+          _videoPlayerController!.value.position == _videoPlayerController!.value.duration) {
+        _playNext();
+      }
+    });
+
+    setState(() {});
+  }
+
+  void _playNext() {
+    if (_currentIndex < widget.videoFiles.length - 1) {
+      setState(() {
+        _currentIndex++;
+        _initPlayer();
+      });
+    } else {
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController?.dispose();
+    _chewieController?.dispose();
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: _chewieController != null &&
+                _chewieController!.videoPlayerController.value.isInitialized
+            ? Chewie(controller: _chewieController!)
+            : const CircularProgressIndicator(),
+      ),
+    );
+  }
+}
