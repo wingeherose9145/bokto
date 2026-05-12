@@ -5,36 +5,26 @@ plugins {
 }
 
 android {
-    // 现代写法：不再使用 namespace 关键字在外部，保持简洁
-    namespace = "com.example.my_video_player"
-    compileSdk = 34
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+    namespace "com.example.my_video_player"
+    compileSdk 34
 
     defaultConfig {
-        applicationId = "com.example.my_video_player"
-        minSdk = 21
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        applicationId "com.example.my_video_player"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.debug
-            minifyEnabled = false
-            shrinkResources = false
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
         }
     }
 }
 
 flutter {
-    source = "../../"
+    source "../../"
 }
