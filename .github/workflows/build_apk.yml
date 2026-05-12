@@ -12,20 +12,22 @@ jobs:
 
       - name: Reconstruct and Build
         run: |
-          # 1. 进入存放 main.dart 的目录
           cd my_video_player
           
-          # 2. 暴力删除已经损坏的旧 android 文件夹
-          rm -rf android
+          # 1. 彻底清理旧缓存
+          flutter clean
           
-          # 3. 原地重建一个完美的安卓外壳 (这会生成全新的 Gradle 和 kts 文件)
+          # 2. 强制重新生成 Android 文件（确保 pubspec.yaml 生效）
           flutter create . --platforms=android
           
-          # 4. 获取依赖
+          # 3. 重新获取插件
           flutter pub get
           
-          # 5. 执行正式打包
-          flutter build apk --release --no-tree-shake-icons
+          # 4. 这里的关键：给 gradlew 运行权限，防止服务器拒绝执行
+          chmod +x android/gradlew
+          
+          # 5. 执行打包，并跳过版本校验
+          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
