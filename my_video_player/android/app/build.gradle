@@ -51,8 +51,10 @@ android {
 
     buildTypes {
         release {
-            // 注意：私密播放器通常不需要混淆，避免插件调用出错
             signingConfig signingConfigs.debug
+            // 增加这两行，跳过压缩和混淆
+            minifyEnabled false
+            shrinkResources false
         }
     }
 }
