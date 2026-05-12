@@ -1,30 +1,12 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    // 使用新的插件引入方式
     id "dev.flutter.flutter-gradle-plugin"
 }
 
 android {
     namespace "com.example.my_video_player"
-    compileSdk 34 // 适配现代安卓版本
-
-    defaultConfig {
-        applicationId "com.example.my_video_player"
-        minSdk 21     // 确保满足播放器插件要求
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
-    }
-
-    buildTypes {
-        release {
-            // 暂时关闭混淆以提高成功率
-            minifyEnabled false
-            shrinkResources false
-            signingConfig signingConfigs.debug
-        }
-    }
+    compileSdk 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -34,9 +16,24 @@ android {
     kotlinOptions {
         jvmTarget = '11'
     }
+
+    defaultConfig {
+        applicationId "com.example.my_video_player"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
 }
 
-// 这里的配置必须保持简洁，适配新版插件
 flutter {
     source '../..'
 }
