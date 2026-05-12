@@ -10,22 +10,14 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Hard Reset and Build
+      - name: Build
         run: |
           cd my_video_player
-          
-          # 1. 物理删除整个 android 文件夹（防止旧格式残留）
-          rm -rf android
-          
-          # 2. 重新创建纯净的安卓外壳
-          flutter create . --platforms=android
-          
-          # 3. 这里的关键：检查并强制删除可能再次生成的 .kts 干扰项（如果存在）
-          # 我们统一使用标准配置，不给冲突留机会
+          flutter clean
           flutter pub get
-          
-          # 4. 执行打包，并针对 AGP 9 的警告添加免检
-          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
+          chmod +x android/gradlew
+          # 关键：加上 --verbose 捕捉具体错误
+          flutter build apk --release --no-tree-shake-icons --verbose
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

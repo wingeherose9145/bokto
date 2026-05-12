@@ -45,6 +45,7 @@ class _VideoListPageState extends State<VideoListPage> {
   Future<void> _loadPrivateVideos() async {
     final directory = await getApplicationDocumentsDirectory();
     final List<FileSystemEntity> entities = directory.listSync();
+    if (!mounted) return;
     setState(() {
       _videoFiles = entities
           .whereType<File>()
@@ -54,7 +55,7 @@ class _VideoListPageState extends State<VideoListPage> {
   }
 
   Future<void> _importVideos() async {
-    FilePickerResult? result = await FilePicker.pickFiles(
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.video,
       allowMultiple: true,
     );
@@ -130,42 +131,48 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   Future<void> _initPlayer() async {
+    // 销毁旧控制器
     _chewieController?.dispose();
     _videoPlayerController?.dispose();
+    _chewieController = null;
+    _videoPlayerController = null;
 
-    _videoPlayerController = VideoPlayerController.file(widget.videoFiles[_currentIndex]);
-    
-    await _videoPlayerController!.initialize();
+    final controller = VideoPlayerController.file(widget.videoFiles[_currentIndex]);
+    await controller.initialize();
 
-    _chewieController = ChewieController(
-      videoPlayerController: _videoPlayerController!,
+    final chewie = ChewieController(
+      videoPlayerController: controller,
       autoPlay: true,
       looping: false,
       allowFullScreen: true,
       allowPlaybackSpeedChanging: true,
       showControls: true,
-      aspectRatio: _videoPlayerController!.value.aspectRatio,
+      aspectRatio: controller.value.aspectRatio,
       deviceOrientationsAfterFullScreen: [DeviceOrientation.portraitUp],
     );
 
-    _videoPlayerController!.addListener(() {
-      if (_videoPlayerController!.value.position != Duration.zero &&
-          _videoPlayerController!.value.position == _videoPlayerController!.value.duration) {
+    // 播放结束监听
+    controller.addListener(() {
+      if (controller.value.position != Duration.zero &&
+          controller.value.position == controller.value.duration) {
         _playNext();
       }
     });
 
-    setState(() {});
+    if (mounted) {
+      setState(() {
+        _videoPlayerController = controller;
+        _chewieController = chewie;
+      });
+    }
   }
 
   void _playNext() {
     if (_currentIndex < widget.videoFiles.length - 1) {
-      setState(() {
-        _currentIndex++;
-        _initPlayer();
-      });
+      _currentIndex++;
+      _initPlayer();
     } else {
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
     }
   }
 
@@ -182,8 +189,7 @@ class _PlayerPageState extends State<PlayerPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
-        child: _chewieController != null &&
-                _chewieController!.videoPlayerController.value.isInitialized
+        child: (_chewieController != null && _videoPlayerController!.value.isInitialized)
             ? Chewie(controller: _chewieController!)
             : const CircularProgressIndicator(),
       ),
