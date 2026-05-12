@@ -53,7 +53,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   bool _showControls = true;
 
   Future<void> _pickVideo() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.video);
+    FilePickerResult? result = await FilePicker.pickFiles(type: FileType.video);
     if (result != null) {
       File sourceFile = File(result.files.single.path!);
       // 关键步骤：复制到 App 内部，这样删除原视频也能播
