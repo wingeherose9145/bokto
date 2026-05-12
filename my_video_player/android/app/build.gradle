@@ -1,66 +1,42 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
+    // 使用新的插件引入方式
     id "dev.flutter.flutter-gradle-plugin"
-}
-
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file('local.properties')
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader('UTF-8') { reader ->
-        localProperties.load(reader)
-    }
-}
-
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
-}
-
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
 }
 
 android {
     namespace "com.example.my_video_player"
-    compileSdkVersion flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
+    compileSdk 34 // 适配现代安卓版本
 
     defaultConfig {
         applicationId "com.example.my_video_player"
-        // 关键修改：Chewie 插件要求最低 API 21 (Android 5.0)
-        minSdkVersion 21
-        targetSdkVersion flutter.targetSdkVersion
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
+        minSdk 21     // 确保满足播放器插件要求
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
-            // 增加这两行，跳过压缩和混淆
+            // 暂时关闭混淆以提高成功率
             minifyEnabled false
             shrinkResources false
+            signingConfig signingConfigs.debug
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
     }
 }
 
+// 这里的配置必须保持简洁，适配新版插件
 flutter {
     source '../..'
 }
-
-dependencies {}
