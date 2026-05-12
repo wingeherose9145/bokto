@@ -55,6 +55,7 @@ class _VideoListPageState extends State<VideoListPage> {
   }
 
   Future<void> _importVideos() async {
+    // 适配最新版 file_picker 的写法
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.video,
       allowMultiple: true,
@@ -77,7 +78,7 @@ class _VideoListPageState extends State<VideoListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('我的私密库'),
+        title: const Text('我的私密库 Pro'),
         actions: [
           IconButton(onPressed: _importVideos, icon: const Icon(Icons.add_to_photos)),
         ],
@@ -127,15 +128,13 @@ class _PlayerPageState extends State<PlayerPage> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
-    _initPlayer();
+    _initPlayer(); // <--- 关键初始化函数
   }
 
+  // 这是被“弄丢”的初始化函数，确保它存在
   Future<void> _initPlayer() async {
-    // 销毁旧控制器
     _chewieController?.dispose();
     _videoPlayerController?.dispose();
-    _chewieController = null;
-    _videoPlayerController = null;
 
     final controller = VideoPlayerController.file(widget.videoFiles[_currentIndex]);
     await controller.initialize();
@@ -151,7 +150,6 @@ class _PlayerPageState extends State<PlayerPage> {
       deviceOrientationsAfterFullScreen: [DeviceOrientation.portraitUp],
     );
 
-    // 播放结束监听
     controller.addListener(() {
       if (controller.value.position != Duration.zero &&
           controller.value.position == controller.value.duration) {
@@ -189,7 +187,7 @@ class _PlayerPageState extends State<PlayerPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
-        child: (_chewieController != null && _videoPlayerController!.value.isInitialized)
+        child: (_chewieController != null && _videoPlayerController != null && _videoPlayerController!.value.isInitialized)
             ? Chewie(controller: _chewieController!)
             : const CircularProgressIndicator(),
       ),

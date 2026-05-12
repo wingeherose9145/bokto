@@ -30,11 +30,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  video_player: 2.8.1
-  chewie: 1.8.0
-  file_picker: 8.0.0
-  path_provider: 2.1.2
-  cupertino_icons: 1.0.6
+  # 允许自动匹配兼容版本，解决版本冲突
+  video_player: ^2.8.3
+  chewie: ^1.8.5
+  file_picker: ^8.0.0
+  path_provider: ^2.1.2
+  cupertino_icons: ^1.0.6
 
 dev_dependencies:
   flutter_test:
