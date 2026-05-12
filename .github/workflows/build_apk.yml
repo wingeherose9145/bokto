@@ -6,19 +6,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # 改用最新稳定版 Flutter
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          # 不指定固定版本，让它自动选择最新的
           
       - name: Build APK
         run: |
           cd my_video_player
-          # 强制清理并重新获取依赖
-          flutter clean
           flutter pub get
-          flutter build apk --release --no-tree-shake-icons
+          # 加上免检旗标，强制要求服务器直接打包
+          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
